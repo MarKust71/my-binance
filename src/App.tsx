@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css';
+import { useState } from 'react';
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useBinance } from './hooks/useBinance';
+
+export const App = () => {
+  const { binanceClientWSClean, curDayClose, getAccountInfo } = useBinance();
+
+  const [isRunning, setIsRunning] = useState(true);
+
+  const onStart = () => {
+    setIsRunning(true);
+  };
+
+  const onStop = () => {
+    binanceClientWSClean();
+
+    setIsRunning(false);
+  };
+
+  const onAccount = () => {
+    getAccountInfo().then((info) => console.log(info));
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <p>{isRunning ? curDayClose : ''}</p>
 
-export default App
+      {isRunning ? <button onClick={onStop}>stop</button> : false}
+
+      {!isRunning ? <button onClick={onStart}>start</button> : false}
+
+      <button onClick={onAccount}>account</button>
+    </>
+  );
+};
+
+export default App;
