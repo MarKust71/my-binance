@@ -1,36 +1,29 @@
 import './App.css';
-import { useState } from 'react';
 
-import { useBinance } from './hooks/useBinance';
+import { READY_STATE, useBinance } from './hooks/useBinance';
 
 export const App = () => {
-  const { binanceClientWSClean, curDayClose, getAccountInfo } = useBinance();
-
-  const [isRunning, setIsRunning] = useState(true);
-
-  const onStart = () => {
-    setIsRunning(true);
-  };
+  const { price, readyState, close } = useBinance();
 
   const onStop = () => {
-    binanceClientWSClean();
-
-    setIsRunning(false);
-  };
-
-  const onAccount = () => {
-    getAccountInfo().then((info) => console.log(info));
+    close();
   };
 
   return (
     <>
-      <p>{isRunning ? curDayClose : ''}</p>
+      <h1>binance</h1>
 
-      {isRunning ? <button onClick={onStop}>stop</button> : false}
+      <p>{readyState === undefined ? 'undefined' : READY_STATE[readyState]}</p>
 
-      {!isRunning ? <button onClick={onStart}>start</button> : false}
+      <p>{price ? price : '***'}</p>
 
-      <button onClick={onAccount}>account</button>
+      <button onClick={onStop}>stop</button>
+
+      <div>
+        <button>BUY</button>
+
+        <button>SELL</button>
+      </div>
     </>
   );
 };
