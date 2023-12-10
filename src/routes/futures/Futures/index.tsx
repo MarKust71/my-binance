@@ -65,7 +65,8 @@ export const Futures = () => {
 
   return (
     <>
-      <div>Futures</div>
+      <h3 style={{ textAlign: 'start' }}>Futures</h3>
+
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ marginTop: '8px' }}>First candle:</div>
         <div>{candles?.[0]?.openTime}</div>
