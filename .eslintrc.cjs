@@ -127,12 +127,6 @@ module.exports = {
     "@typescript-eslint/indent": 0,
     "import/no-anonymous-default-export": 2,
     "react-hooks/rules-of-hooks": 2,
-    "react-hooks/exhaustive-deps": [
-      "error",
-      {
-        "additionalHooks": "(useMemoOne)"
-      }
-    ],
     "camelcase": 2,
     "prefer-destructuring": 2,
     "no-nested-ternary": 2

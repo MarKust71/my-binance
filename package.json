@@ -11,18 +11,23 @@
   },
   "dependencies": {
     "@binance/connector-typescript": "^0.3.3",
+    "@types/react-router-dom": "^5.3.3",
     "binance": "^2.8.11",
     "binance-api-node": "^0.12.7",
     "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
+    "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-indexed-db-hook": "^1.0.14",
     "react-intl": "^6.5.4",
+    "react-router-dom": "^6.20.1",
     "uuid": "^9.0.1",
     "vite-plugin-node-polyfills": "^0.16.0",
     "zustand": "^4.4.6"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20.9.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useIndexedDB } from 'react-indexed-db-hook';
 
 import { useValuesStore } from 'store/useValuesStore';
 
@@ -9,35 +10,42 @@ export const {
   VITE_BINANCE_API_KEY: BINANCE_API_KEY,
   VITE_BINANCE_API_SECRET: BINANCE_API_SECRET,
   VITE_BINANCE_API_URL: BINANCE_API_URL,
+  VITE_BINANCE_FUTURES_API_URL: BINANCE_FUTURES_API_URL,
 } = import.meta.env;
 
 export const READY_STATE = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
 
-const coin = 'BTCTUSD';
+const coin = 'BTCUSDT';
 const url = `wss://stream.binance.com:9443/ws/${coin.toLowerCase()}@trade`;
 
 export const useBinance = () => {
   const { addValue } = useValuesStore();
+  const db = useIndexedDB('ticks');
 
   const [price, setPrice] = useState(-1);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [trade, setTrade] = useState<Trade | null>(null);
   const [direction, setDirection] = useState<Direction>(Direction.NONE);
+  const [readyState, setReadyState] = useState<WebSocket['readyState']>();
 
-  const close = () => {
-    if (socket) {
-      socket.close();
-    }
+  const onOpen = (ws: WebSocket) => {
+    setReadyState(() => ws.readyState);
+
+    console.log('Connected to Binance');
   };
 
-  const onOpen = () => {
-    console.log('Connected to Binance');
+  const onClose = (ws: WebSocket) => {
+    setReadyState(() => ws.readyState);
+
+    console.log('Disconnected from Binance');
   };
 
   const onMessage = (event: MessageEvent) => {
     const data = JSON.parse(event.data);
 
-    const { p: price, q: quantity, a: seller, b: buyer } = data;
+    db.add(data);
+
+    const { p: price, q: quantity } = data;
 
     setPrice((prevPrice) => {
       setDirection(() => priceChangeDirection({ prevPrice, price }));
@@ -48,53 +56,11 @@ export const useBinance = () => {
     setTrade(() => ({ p: price, q: quantity }));
 
     addValue(price * quantity);
-
-    if (buyer === 3257517519 || seller === 3257517519) {
-      // TODO: remove!
-      // eslint-disable-next-line no-console
-      console.log('%c 3257517519 ', 'color: black; background-color: yellow', {
-        price,
-        quantity,
-        value: price * quantity,
-        time: new Date(data.T).toLocaleTimeString(),
-        direction,
-        seller,
-        buyer,
-      });
-    }
-
-    if (buyer === 3257646791 || seller === 3257646791) {
-      // TODO: remove!
-      // eslint-disable-next-line no-console
-      console.log('%c 3257646791 ', 'color: black; background-color: yellow', {
-        price,
-        quantity,
-        value: price * quantity,
-        time: new Date(data.T).toLocaleTimeString(),
-        direction,
-        seller,
-        buyer,
-      });
-    }
-
-    if (price * quantity > 10000) {
-      // TODO: remove!
-      // eslint-disable-next-line no-console
-      console.log('%c  ', 'color: black; background-color: yellow', {
-        price,
-        quantity,
-        value: price * quantity,
-        time: new Date(data.T).toLocaleTimeString(),
-        direction,
-        seller,
-        buyer,
-      });
-    }
   };
 
-  useEffect(() => {
-    const endpoint = '/api/v3/ticker/price';
-    fetch(`${BINANCE_API_URL}${endpoint}?symbol=${coin}`, {
+  const open = () => {
+    const ENDPOINT = '/api/v3/ticker/price';
+    fetch(`${BINANCE_API_URL}${ENDPOINT}?symbol=${coin}`, {
       method: 'GET',
     })
       .then((res) => res.json())
@@ -111,20 +77,40 @@ export const useBinance = () => {
     };
 
     ws.onopen = () => {
-      onOpen();
+      onOpen(ws);
     };
 
-    return () => {
-      ws.close();
+    ws.onclose = () => {
+      onClose(ws);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    ws.onerror = (error) => {
+      console.error(error);
+    };
+  };
+
+  const close = useCallback(() => {
+    if (socket) {
+      socket.close();
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    return () => {
+      close();
+    };
   }, []);
+
+  useEffect(() => {
+    setReadyState(() => socket?.readyState);
+  }, [socket?.readyState]);
 
   return {
     close,
     direction,
+    open,
     price,
-    readyState: socket?.readyState,
+    readyState,
     trade,
   };
 };
