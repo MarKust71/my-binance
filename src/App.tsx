@@ -2,6 +2,8 @@ import { Route, Link, Routes } from 'react-router-dom';
 import { LiveData } from 'src/routes/trade/LiveData';
 import { Futures } from 'src/routes/futures/Futures';
 
+import './App.css';
+
 export const App = () => {
   return (
     <>
@@ -15,12 +17,10 @@ export const App = () => {
               <Link to="/futures">Futures</Link>
             </li>
             <li>
-              <Link to="/contact">Kontakt</Link>
+              <Link to="/contact">Contact</Link>
             </li>
           </ul>
         </nav>
-
-        <hr />
       </div>
 
       <Routes>
