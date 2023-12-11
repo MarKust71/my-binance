@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { isEmpty } from 'lodash';
 import { useIntl } from 'react-intl';
 
 import { useFutures } from 'hooks/useFutures';
@@ -24,13 +23,13 @@ export const Futures = () => {
   }, []);
 
   useEffect(() => {
-    if (!isEmpty(data)) {
+    if (!data) {
       getSwings(2);
     }
   }, [data]);
 
   useEffect(() => {
-    if (!isEmpty(swings)) {
+    if (!swings) {
       // TODO: remove!
       // eslint-disable-next-line no-console
       console.log('%c with swings: ', 'color: black; background-color: yellow', {
@@ -51,13 +50,13 @@ export const Futures = () => {
 */
 
   useEffect(() => {
-    if (!isEmpty(highestSwing)) {
+    if (highestSwing !== undefined && highestSwing !== null) {
       checkTrend(highestSwing?.openT);
     }
   }, [highestSwing]);
 
   useEffect(() => {
-    if (!isEmpty(candle)) {
+    if (!candle) {
       // TODO: remove!
       // eslint-disable-next-line no-console
       console.log('%c candle: ', 'color: black; background-color: yellow', { candle });
