@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { isEmpty } from 'lodash';
+import { useIntl } from 'react-intl';
 
 import { useFutures } from 'hooks/useFutures';
 
@@ -12,9 +13,11 @@ export const Futures = () => {
     getCandleByPeriod,
     getSwings,
     highestSwing,
+    isFetching,
     lowestSwing,
     swings,
   } = useFutures();
+  const { formatNumber } = useIntl();
 
   useEffect(() => {
     getCandleByPeriod();
@@ -37,6 +40,7 @@ export const Futures = () => {
     }
   }, [swings]);
 
+  /*
   useEffect(() => {
     if (!isEmpty(lowestSwing)) {
       // TODO: remove!
@@ -44,13 +48,10 @@ export const Futures = () => {
       console.log('%c lowestSwing: ', 'color: black; background-color: yellow', { lowestSwing });
     }
   }, [lowestSwing]);
+*/
 
   useEffect(() => {
     if (!isEmpty(highestSwing)) {
-      // TODO: remove!
-      // eslint-disable-next-line no-console
-      console.log('%c highestSwing: ', 'color: black; background-color: yellow', { highestSwing });
-
       checkTrend(highestSwing?.openT);
     }
   }, [highestSwing]);
@@ -67,32 +68,124 @@ export const Futures = () => {
     <>
       <h3 style={{ textAlign: 'start' }}>Futures</h3>
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ marginTop: '8px' }}>First candle:</div>
-        <div>{candles?.[0]?.openTime}</div>
-
-        <div style={{ marginTop: '8px' }}>First swing:</div>
-        <div>{swings?.[0]?.openTime}</div>
-        {swings?.[0]?.isSwingHigh && <div>{`high: ${swings?.[0]?.high}`}</div>}
-        {swings?.[0]?.isSwingLow && <div>{`low: ${swings?.[0]?.low}`}</div>}
-
-        <div style={{ marginTop: '8px' }}>Lowest swing:</div>
-        <div>{lowestSwing?.openTime}</div>
-        <div>{`low: ${lowestSwing?.low}`}</div>
-
-        <div style={{ marginTop: '8px' }}>Highest swing:</div>
-        <div>{highestSwing?.openTime}</div>
-        <div>{`high: ${highestSwing?.high}`}</div>
-
-        <div style={{ marginTop: '8px' }}>Last swing:</div>
-        <div>{swings?.[swings.length - 1]?.openTime}</div>
-        {swings?.[swings.length - 1]?.isSwingHigh && (
-          <div>{`high: ${swings?.[swings.length - 1]?.high}`}</div>
-        )}
-        {swings?.[swings.length - 1]?.isSwingLow && (
-          <div>{`low: ${swings?.[swings.length - 1]?.low}`}</div>
-        )}
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'row' }}>
+        <button type="button" onClick={() => getCandleByPeriod()} disabled={isFetching}>
+          Refresh
+        </button>
       </div>
+
+      <table style={{ width: '100%' }}>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Date, time</th>
+            <th>Price</th>
+            <th>Trend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            style={{
+              color: `${Number(candles?.[0]?.close) > Number(candles?.[0]?.open) ? 'green' : ''}${
+                Number(candles?.[0]?.close) < Number(candles?.[0]?.open) ? 'red' : ''
+              }${Number(candles?.[0]?.close) === Number(candles?.[0]?.open) ? 'blue' : ''}`,
+            }}
+          >
+            <td style={{ textAlign: 'start' }}>First candle:</td>
+            <td>{candles?.[0]?.openTime}</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr
+            style={{
+              color: `${swings?.[0]?.isSwingHigh && !swings?.[0]?.isSwingLow ? 'green' : ''}${
+                swings?.[0]?.isSwingLow && !swings?.[0]?.isSwingHigh ? 'red' : ''
+              }${swings?.[0]?.isSwingLow && swings?.[0]?.isSwingHigh ? 'blue' : ''}`,
+            }}
+          >
+            <td style={{ textAlign: 'start' }}>First swing:</td>
+            <td>{swings?.[0]?.openTime}</td>
+            <td>
+              {swings?.[0]?.isSwingHigh && (
+                <div>{`${formatNumber(swings?.[0]?.high, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}</div>
+              )}
+              {swings?.[0]?.isSwingLow &&
+                `${formatNumber(swings?.[0]?.low, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+            </td>
+            <td>
+              {swings?.[0]?.isSwingHigh && <div>{'high'}</div>}
+              {swings?.[0]?.isSwingLow && <div>{'low'}</div>}
+            </td>
+          </tr>
+          <tr style={{ color: 'red' }}>
+            <td style={{ textAlign: 'start' }}>Lowest swing:</td>
+            <td>{lowestSwing?.openTime}</td>
+            <td>
+              {!!lowestSwing && (
+                <div>{`${formatNumber(lowestSwing.low, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}</div>
+              )}
+            </td>
+            <td>{!!lowestSwing && <div>{'low'}</div>}</td>
+          </tr>
+          <tr style={{ color: 'green' }}>
+            <td style={{ textAlign: 'start' }}>Highest swing:</td>
+            <td>{highestSwing?.openTime}</td>
+            <td>
+              {!!highestSwing &&
+                `${formatNumber(highestSwing?.high, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+            </td>
+            <td>{!!highestSwing && <div>{'high'}</div>}</td>
+          </tr>
+          <tr
+            style={{
+              color: `${
+                swings?.[swings.length - 1]?.isSwingHigh && !swings?.[swings.length - 1]?.isSwingLow
+                  ? 'green'
+                  : ''
+              }${
+                swings?.[swings.length - 1]?.isSwingLow && !swings?.[swings.length - 1]?.isSwingHigh
+                  ? 'red'
+                  : ''
+              }${
+                swings?.[swings.length - 1]?.isSwingLow && swings?.[swings.length - 1]?.isSwingHigh
+                  ? 'blue'
+                  : ''
+              }`,
+            }}
+          >
+            <td style={{ textAlign: 'start' }}>Last swing:</td>
+            <td>{swings?.[swings.length - 1]?.openTime}</td>
+            <td>
+              {swings?.[swings.length - 1]?.isSwingHigh &&
+                `${formatNumber(swings?.[swings.length - 1]?.high, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+              {swings?.[swings.length - 1]?.isSwingLow &&
+                `${formatNumber(swings?.[swings.length - 1]?.low, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+            </td>
+            <td>
+              {swings?.[swings.length - 1]?.isSwingHigh && <div>{'high'}</div>}
+              {swings?.[swings.length - 1]?.isSwingLow && <div>{'low'}</div>}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </>
   );
 };

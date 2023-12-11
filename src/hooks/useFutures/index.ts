@@ -22,6 +22,8 @@ export const useFutures = () => {
   const [swings, setSwings] = useState<CandleStickWithSwing[]>([]);
   const [lowestSwing, setLowestSwing] = useState<CandleStickWithSwing | null>(null);
   const [highestSwing, setHighestSwing] = useState<CandleStickWithSwing | null>(null);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [isFetched, setIsFetched] = useState<boolean>(false);
 
   const getCandleByPeriod = async () => {
     const ENDPOINT = '/fapi/v1/continuousKlines';
@@ -35,6 +37,8 @@ export const useFutures = () => {
     const endDate = undefined as Date | undefined;
 
     try {
+      setIsFetched(() => false);
+      setIsFetching(() => true);
       const result = await fetch(
         // eslint-disable-next-line max-len
         `${BINANCE_FUTURES_API_URL}${ENDPOINT}?pair=${PAIR}&interval=${INTERVAL}&contractType=${CONTRACT_TYPE}${
@@ -44,6 +48,8 @@ export const useFutures = () => {
           method: 'GET',
         },
       );
+      setIsFetching(() => false);
+      setIsFetched(() => true);
 
       const data = await result.json();
 
@@ -51,6 +57,7 @@ export const useFutures = () => {
 
       setData(formattedData);
     } catch (error) {
+      setIsFetching(() => false);
       console.error(error);
     }
   };
@@ -108,6 +115,8 @@ export const useFutures = () => {
     const endTime = undefined as Date | undefined;
 
     try {
+      setIsFetched(() => false);
+      setIsFetching(() => true);
       const result = await fetch(
         // eslint-disable-next-line max-len
         `${BINANCE_FUTURES_API_URL}${ENDPOINT}?symbol=${SYMBOL}${
@@ -117,6 +126,8 @@ export const useFutures = () => {
           method: 'GET',
         },
       );
+      setIsFetching(() => false);
+      setIsFetched(() => true);
 
       const data = (await result.json()) as FuturesTrade[];
 
@@ -169,6 +180,7 @@ export const useFutures = () => {
 
       setCandle(candleData);
     } catch (error) {
+      setIsFetching(() => false);
       console.error(error);
     }
   };
@@ -178,6 +190,8 @@ export const useFutures = () => {
     const SYMBOL = 'BTCUSDT';
 
     try {
+      setIsFetched(() => false);
+      setIsFetching(() => true);
       const result = await fetch(
         // eslint-disable-next-line max-len
         `${BINANCE_FUTURES_API_URL}${ENDPOINT}?symbol=${SYMBOL}`,
@@ -185,6 +199,8 @@ export const useFutures = () => {
           method: 'GET',
         },
       );
+      setIsFetching(() => false);
+      setIsFetched(() => true);
 
       const data = (await result.json()) as FuturesTrade[];
 
@@ -204,6 +220,7 @@ export const useFutures = () => {
 
       setData(formattedData);
     } catch (error) {
+      setIsFetching(() => false);
       console.error(error);
     }
   };
@@ -272,6 +289,8 @@ export const useFutures = () => {
     getSwings,
     getTradeList,
     highestSwing,
+    isFetched,
+    isFetching,
     lowestSwing,
     swings,
   };
