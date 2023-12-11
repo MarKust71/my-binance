@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { isEmpty } from 'lodash';
 
 import { BINANCE_FUTURES_API_URL } from 'hooks/useBinance';
 import { CandleStickWithSwing, FuturesTrade, Trend } from 'hooks/useFutures/types';
@@ -63,7 +62,7 @@ export const useFutures = () => {
   };
 
   const getSwings = async (period: number) => {
-    if (!isEmpty(data)) {
+    if (!data) {
       const result: CandleStickWithSwing[] = [];
 
       for (let index = 0; index < data.length; index++) {
