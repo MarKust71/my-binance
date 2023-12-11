@@ -63,10 +63,6 @@ export const useFutures = () => {
 
   const getSwings = async (period: number) => {
     if (data) {
-      // TODO: remove!
-      // eslint-disable-next-line no-console
-      console.log('%c getSwings: ', 'color: black; background-color: yellow', { data });
-
       const result: CandleStickWithSwing[] = [];
 
       for (let index = 0; index < data.length; index++) {
