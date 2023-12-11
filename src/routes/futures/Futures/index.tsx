@@ -79,7 +79,7 @@ export const Futures = () => {
             <th>Item</th>
             <th>Date, time</th>
             <th>Price</th>
-            <th>Trend</th>
+            <th>High/Low</th>
           </tr>
         </thead>
         <tbody>
@@ -150,15 +150,13 @@ export const Futures = () => {
           <tr
             style={{
               color: `${
-                swings?.[swings.length - 1]?.isSwingHigh && !swings?.[swings.length - 1]?.isSwingLow
+                swings?.[swings.length - 1]?.close > swings?.[swings.length - 1]?.open
                   ? 'green'
                   : ''
               }${
-                swings?.[swings.length - 1]?.isSwingLow && !swings?.[swings.length - 1]?.isSwingHigh
-                  ? 'red'
-                  : ''
+                swings?.[swings.length - 1]?.close < swings?.[swings.length - 1]?.open ? 'red' : ''
               }${
-                swings?.[swings.length - 1]?.isSwingLow && swings?.[swings.length - 1]?.isSwingHigh
+                swings?.[swings.length - 1]?.close === swings?.[swings.length - 1]?.open
                   ? 'blue'
                   : ''
               }`,

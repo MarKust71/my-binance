@@ -226,7 +226,15 @@ export const useFutures = () => {
 
   const checkTrend = useCallback(
     (time: number) => {
+      if (!swings?.length || !candles?.length) {
+        return;
+      }
+
       const startSlopeIndex = swings.findIndex((item: CandleStickWithSwing) => item.openT === time);
+
+      if (startSlopeIndex === -1) {
+        return;
+      }
 
       let trend = Trend.NONE;
       if (swings[startSlopeIndex].isSwingHigh && !swings[startSlopeIndex].isSwingLow) {
