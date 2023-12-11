@@ -62,7 +62,7 @@ export const useFutures = () => {
   };
 
   const getSwings = async (period: number) => {
-    if (!data) {
+    if (data) {
       const result: CandleStickWithSwing[] = [];
 
       for (let index = 0; index < data.length; index++) {
