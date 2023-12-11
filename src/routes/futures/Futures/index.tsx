@@ -79,7 +79,7 @@ export const Futures = () => {
             <th>Item</th>
             <th>Date, time</th>
             <th>Price</th>
-            <th>Trend</th>
+            <th>High/Low</th>
           </tr>
         </thead>
         <tbody>
@@ -97,9 +97,9 @@ export const Futures = () => {
           </tr>
           <tr
             style={{
-              color: `${swings?.[0]?.isSwingHigh && !swings?.[0]?.isSwingLow ? 'green' : ''}${
-                swings?.[0]?.isSwingLow && !swings?.[0]?.isSwingHigh ? 'red' : ''
-              }${swings?.[0]?.isSwingLow && swings?.[0]?.isSwingHigh ? 'blue' : ''}`,
+              color: `${swings?.[0]?.close > swings?.[0]?.open ? 'green' : ''}${
+                swings?.[0]?.close < swings?.[0]?.open ? 'red' : ''
+              }${swings?.[0]?.close === swings?.[0]?.open ? 'blue' : ''}`,
             }}
           >
             <td style={{ textAlign: 'start' }}>First swing:</td>
@@ -111,11 +111,12 @@ export const Futures = () => {
                   maximumFractionDigits: 2,
                 })}`}</div>
               )}
-              {swings?.[0]?.isSwingLow &&
-                `${formatNumber(swings?.[0]?.low, {
+              {swings?.[0]?.isSwingLow && (
+                <div>{`${formatNumber(swings?.[0]?.low, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })}`}
+                })}`}</div>
+              )}
             </td>
             <td>
               {swings?.[0]?.isSwingHigh && <div>{'high'}</div>}
@@ -139,26 +140,25 @@ export const Futures = () => {
             <td style={{ textAlign: 'start' }}>Highest swing:</td>
             <td>{highestSwing?.openTime}</td>
             <td>
-              {!!highestSwing &&
-                `${formatNumber(highestSwing?.high, {
+              {!!highestSwing && (
+                <div>{`${formatNumber(highestSwing?.high, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })}`}
+                })}`}</div>
+              )}
             </td>
             <td>{!!highestSwing && <div>{'high'}</div>}</td>
           </tr>
           <tr
             style={{
               color: `${
-                swings?.[swings.length - 1]?.isSwingHigh && !swings?.[swings.length - 1]?.isSwingLow
+                swings?.[swings.length - 1]?.close > swings?.[swings.length - 1]?.open
                   ? 'green'
                   : ''
               }${
-                swings?.[swings.length - 1]?.isSwingLow && !swings?.[swings.length - 1]?.isSwingHigh
-                  ? 'red'
-                  : ''
+                swings?.[swings.length - 1]?.close < swings?.[swings.length - 1]?.open ? 'red' : ''
               }${
-                swings?.[swings.length - 1]?.isSwingLow && swings?.[swings.length - 1]?.isSwingHigh
+                swings?.[swings.length - 1]?.close === swings?.[swings.length - 1]?.open
                   ? 'blue'
                   : ''
               }`,
@@ -167,18 +167,20 @@ export const Futures = () => {
             <td style={{ textAlign: 'start' }}>Last swing:</td>
             <td>{swings?.[swings.length - 1]?.openTime}</td>
             <td>
-              {swings?.[swings.length - 1]?.isSwingHigh &&
-                `${formatNumber(swings?.[swings.length - 1]?.high, {
+              {swings?.[swings.length - 1]?.isSwingHigh && (
+                <div>{`${formatNumber(swings?.[swings.length - 1]?.high, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })}`}
-              {swings?.[swings.length - 1]?.isSwingLow &&
-                `${formatNumber(swings?.[swings.length - 1]?.low, {
+                })}`}</div>
+              )}
+              {swings?.[swings.length - 1]?.isSwingLow && (
+                <div>{`${formatNumber(swings?.[swings.length - 1]?.low, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
-                })}`}
+                })}`}</div>
+              )}
             </td>
-            <td>
+            <td style={{ display: 'flex', flexDirection: 'column' }}>
               {swings?.[swings.length - 1]?.isSwingHigh && <div>{'high'}</div>}
               {swings?.[swings.length - 1]?.isSwingLow && <div>{'low'}</div>}
             </td>
