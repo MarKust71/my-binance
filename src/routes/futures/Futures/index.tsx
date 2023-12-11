@@ -23,13 +23,13 @@ export const Futures = () => {
   }, []);
 
   useEffect(() => {
-    if (!data) {
+    if (data) {
       getSwings(2);
     }
   }, [data]);
 
   useEffect(() => {
-    if (!swings) {
+    if (swings) {
       // TODO: remove!
       // eslint-disable-next-line no-console
       console.log('%c with swings: ', 'color: black; background-color: yellow', {
@@ -56,7 +56,7 @@ export const Futures = () => {
   }, [highestSwing]);
 
   useEffect(() => {
-    if (!candle) {
+    if (candle) {
       // TODO: remove!
       // eslint-disable-next-line no-console
       console.log('%c candle: ', 'color: black; background-color: yellow', { candle });
