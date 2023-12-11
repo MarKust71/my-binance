@@ -10,6 +10,7 @@ export const continuousKlinesToCandleSticks = ({
   return data.map((item: number[]) => {
     return {
       openT: item[0],
+      /*
       openTime: new Date(item[0]).toLocaleString('pl-PL', {
         year: 'numeric',
         month: 'numeric',
@@ -21,11 +22,14 @@ export const continuousKlinesToCandleSticks = ({
         // @ts-expect-error
         fractionalSecondDigits: 3,
       }),
+*/
+      openTime: new Date(item[0]).toLocaleString(),
       open: item[1],
       high: item[2],
       low: item[3],
       close: item[4],
       closeT: item[6],
+      /*
       closeTime: new Date(item[6]).toLocaleString('pl-PL', {
         year: 'numeric',
         month: 'numeric',
@@ -37,6 +41,8 @@ export const continuousKlinesToCandleSticks = ({
         // @ts-expect-error
         fractionalSecondDigits: 3,
       }),
+*/
+      closeTime: new Date(item[6]).toLocaleString(),
     };
   });
 };
