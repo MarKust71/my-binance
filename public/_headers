@@ -1,5 +1,0 @@
-[[headers]]
-  for = "https://*.binance.com/*"
-  [headers.values]
-    Accept: "application/json"
-    Content-Type: "application/json"
