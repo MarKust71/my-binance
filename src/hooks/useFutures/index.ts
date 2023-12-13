@@ -45,6 +45,10 @@ export const useFutures = () => {
         }${endDate ? `&endTime=${endDate.getTime()}` : ''}`,
         {
           method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
         },
       );
       setIsFetching(() => false);
@@ -123,6 +127,10 @@ export const useFutures = () => {
         }${endTime ? `&endTime=${endTime.getTime()}` : ''}${LIMIT ? `&limit=${LIMIT}` : ''}`,
         {
           method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
         },
       );
       setIsFetching(() => false);
@@ -196,6 +204,10 @@ export const useFutures = () => {
         `${BINANCE_FUTURES_API_URL}${ENDPOINT}?symbol=${SYMBOL}`,
         {
           method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
         },
       );
       setIsFetching(() => false);
