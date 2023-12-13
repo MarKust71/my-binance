@@ -85,7 +85,7 @@ export const useBinance = () => {
     };
 
     ws.onerror = (error) => {
-      console.error(error);
+      console.log(error);
     };
   };
 

@@ -57,7 +57,7 @@ export const useFutures = () => {
       setData(formattedData);
     } catch (error) {
       setIsFetching(() => false);
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -180,7 +180,7 @@ export const useFutures = () => {
       setCandle(candleData);
     } catch (error) {
       setIsFetching(() => false);
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -220,7 +220,7 @@ export const useFutures = () => {
       setData(formattedData);
     } catch (error) {
       setIsFetching(() => false);
-      console.error(error);
+      console.log(error);
     }
   };
 
