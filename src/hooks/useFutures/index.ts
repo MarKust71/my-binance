@@ -1,8 +1,19 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
+import { getEngulfings } from 'src/helpers/GetEngulfings';
+import { getFairValueGaps } from 'src/helpers/GetFairValueGaps';
 
 import { BINANCE_FUTURES_API_URL } from 'hooks/useBinance';
-import { CandleStickWithSwing, FuturesTrade, Trend } from 'hooks/useFutures/types';
+import {
+  CandleData,
+  CandleStick,
+  CandleStickWithSwing,
+  FuturesTrade,
+  GetTradeListParams,
+  QueryParameter,
+  Trade,
+  Trend,
+} from 'hooks/useFutures/types';
 import {
   continuousKlinesToCandleSticks,
   findHighestLowestSwingInRangeIndex,
@@ -11,24 +22,34 @@ import {
   isSwingHigh,
   isSwingLow,
 } from 'hooks/useFutures/helpers';
+import { useFuturesStore } from 'store/useFuturesStore';
 
 export const useFutures = () => {
   const { formatDate, formatTime } = useIntl();
+  const {
+    candles,
+    engulfings,
+    fairValueGaps,
+    setCandles,
+    setEngulfings,
+    setFairValueGaps,
+    setHighestSwing,
+    setIsFetched,
+    setIsFetching,
+    setLowestSwing,
+    setSwings,
+    swings,
+  } = useFuturesStore();
 
-  const [data, setData] = useState<any>(null);
-  const [candle, setCandle] = useState<any>(null);
-  const [candles, setCandles] = useState<CandleStickWithSwing[]>([]);
-  const [swings, setSwings] = useState<CandleStickWithSwing[]>([]);
-  const [lowestSwing, setLowestSwing] = useState<CandleStickWithSwing | null>(null);
-  const [highestSwing, setHighestSwing] = useState<CandleStickWithSwing | null>(null);
-  const [isFetching, setIsFetching] = useState<boolean>(false);
-  const [isFetched, setIsFetched] = useState<boolean>(false);
+  const [data, setData] = useState<CandleStick[] | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [candle, setCandle] = useState<CandleData | null>(null);
 
   const getCandleByPeriod = async () => {
     const ENDPOINT = '/fapi/v1/continuousKlines';
     const PAIR = 'BTCUSDT';
     const CONTRACT_TYPE = 'PERPETUAL';
-    const INTERVAL = '5m';
+    const INTERVAL = '1m';
 
     // const startDate = new Date('2023-11-12T15:00:00.000Z');
     // const endDate = new Date('2023-11-12T15:30:00.000Z');
@@ -36,8 +57,9 @@ export const useFutures = () => {
     const endDate = undefined as Date | undefined;
 
     try {
-      setIsFetched(() => false);
-      setIsFetching(() => true);
+      setIsFetched(false);
+      setIsFetching(true);
+
       const result = await fetch(
         // eslint-disable-next-line max-len
         `${BINANCE_FUTURES_API_URL}${ENDPOINT}?pair=${PAIR}&interval=${INTERVAL}&contractType=${CONTRACT_TYPE}${
@@ -47,8 +69,9 @@ export const useFutures = () => {
           method: 'GET',
         },
       );
-      setIsFetching(() => false);
-      setIsFetched(() => true);
+
+      setIsFetching(false);
+      setIsFetched(true);
 
       const data = await result.json();
 
@@ -56,18 +79,19 @@ export const useFutures = () => {
 
       setData(formattedData);
     } catch (error) {
-      setIsFetching(() => false);
+      setIsFetching(false);
+
       console.error(error);
     }
   };
 
-  const getSwings = async (period: number) => {
+  const getSwings = (periods: number) => {
     if (data) {
       const result: CandleStickWithSwing[] = [];
 
       for (let index = 0; index < data.length; index++) {
-        if (index >= period && index <= data.length - 2 - period) {
-          const slicedData = data.slice(index - period, index + period + 1);
+        if (index >= periods && index <= data.length - 2 - periods) {
+          const slicedData = data.slice(index - periods, index + periods + 1);
           const isSwingHighResult = isSwingHigh(slicedData);
           const isSwingLowResult = isSwingLow(slicedData);
 
@@ -102,31 +126,28 @@ export const useFutures = () => {
     }
   };
 
-  const getTradeList = async () => {
+  const getTradeList = async ({ symbol, limit, startTime, endTime }: GetTradeListParams) => {
     const ENDPOINT = '/fapi/v1/aggTrades';
-    const SYMBOL = 'BTCUSDT';
-    // const LIMIT = 1000;
-    const LIMIT = undefined as number | undefined;
 
-    // const startDate = new Date('2023-11-12T15:21:00.000Z');
-    // const endDate = new Date('2023-11-12T15:22:00.000Z');
-    const startTime = undefined as Date | undefined;
-    const endTime = undefined as Date | undefined;
+    const queryParameters: QueryParameter[] = Object.entries({ symbol, limit, startTime, endTime });
+    const queryString = queryParameters.reduce((acc, [key, value]) => {
+      const isDate = value instanceof Date;
+
+      return value ? `${acc}${acc ? '&' : '?'}${key}=${isDate ? value.getTime() : value}` : acc;
+    }, '');
 
     try {
-      setIsFetched(() => false);
-      setIsFetching(() => true);
+      setIsFetched(false);
+      setIsFetching(true);
       const result = await fetch(
         // eslint-disable-next-line max-len
-        `${BINANCE_FUTURES_API_URL}${ENDPOINT}?symbol=${SYMBOL}${
-          startTime ? `&startTime=${startTime.getTime()}` : ''
-        }${endTime ? `&endTime=${endTime.getTime()}` : ''}${LIMIT ? `&limit=${LIMIT}` : ''}`,
+        `${BINANCE_FUTURES_API_URL}${ENDPOINT}${queryString}`,
         {
           method: 'GET',
         },
       );
-      setIsFetching(() => false);
-      setIsFetched(() => true);
+      setIsFetching(false);
+      setIsFetched(true);
 
       const data = (await result.json()) as FuturesTrade[];
 
@@ -152,9 +173,9 @@ export const useFutures = () => {
         };
       });
 
-      setData(formattedData);
+      // setData(formattedData);
 
-      const candleData = formattedData.reduce(
+      const candleData: CandleData = formattedData.reduce(
         (acc, item) => {
           return {
             o: acc.o,
@@ -179,34 +200,35 @@ export const useFutures = () => {
 
       setCandle(candleData);
     } catch (error) {
-      setIsFetching(() => false);
+      setIsFetching(false);
       console.error(error);
     }
   };
 
-  const getCurrentTradeList = async () => {
-    const ENDPOINT = '/fapi/v1/aggTrades';
+  const getRecentTrades = async () => {
+    const ENDPOINT = '/fapi/v1/trades';
     const SYMBOL = 'BTCUSDT';
 
     try {
-      setIsFetched(() => false);
-      setIsFetching(() => true);
+      setIsFetched(false);
+      setIsFetching(true);
       const result = await fetch(
+        // await fetch(
         // eslint-disable-next-line max-len
         `${BINANCE_FUTURES_API_URL}${ENDPOINT}?symbol=${SYMBOL}`,
         {
           method: 'GET',
         },
       );
-      setIsFetching(() => false);
-      setIsFetched(() => true);
+      setIsFetching(false);
+      setIsFetched(true);
 
-      const data = (await result.json()) as FuturesTrade[];
+      const data = (await result.json()) as Trade[];
 
       const formattedData = data.map((item) => {
         return {
           ...item,
-          time: `${formatDate(item.T)} ${formatTime(item.T, {
+          timeString: `${formatDate(item.time)} ${formatTime(item.time, {
             hour: 'numeric',
             minute: 'numeric',
             second: 'numeric',
@@ -217,22 +239,22 @@ export const useFutures = () => {
         };
       });
 
-      setData(formattedData);
+      setTrades(formattedData);
     } catch (error) {
-      setIsFetching(() => false);
+      setIsFetching(false);
       console.error(error);
     }
   };
 
   const checkTrend = useCallback(
     (time: number) => {
-      if (!swings?.length || !candles?.length) {
+      if (!swings?.length || !candles?.length || !time) {
         return;
       }
 
       const startSlopeIndex = swings.findIndex((item: CandleStickWithSwing) => item.openT === time);
 
-      if (startSlopeIndex === -1) {
+      if (startSlopeIndex === -1 || startSlopeIndex === swings.length - 1) {
         return;
       }
 
@@ -257,7 +279,7 @@ export const useFutures = () => {
 
       // find the closest intersection
       const candleStickIndex = candles.findIndex(
-        (item) => item.openT === swings[endSlopeIndex].openT,
+        (item) => item.openT === swings[endSlopeIndex]?.openT,
       );
 
       const intersectionCandleIndex = findIntersectionCandleIndex(
@@ -286,19 +308,37 @@ export const useFutures = () => {
     [swings, candles],
   );
 
+  useEffect(() => {
+    const engulfings = getEngulfings(candles);
+    setEngulfings(engulfings);
+
+    const fairValueGaps = getFairValueGaps(candles);
+    setFairValueGaps(fairValueGaps);
+  }, [candles]);
+
+  useEffect(() => {
+    if (!!engulfings?.length && !!fairValueGaps?.length) {
+      // TODO: remove!
+      // eslint-disable-next-line no-console
+      console.log('%c useFutures: ', 'color: black; background-color: yellow', {
+        engulfings,
+        fairValueGaps,
+      });
+    }
+  }, [engulfings, fairValueGaps]);
+
+  useEffect(() => {
+    getSwings(2);
+  }, [data]);
+
   return {
     candle,
-    candles,
     checkTrend,
     data,
     getCandleByPeriod,
-    getCurrentTradeList,
+    getRecentTrades,
     getSwings,
     getTradeList,
-    highestSwing,
-    isFetched,
-    isFetching,
-    lowestSwing,
-    swings,
+    trades,
   };
 };

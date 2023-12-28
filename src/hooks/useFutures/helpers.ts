@@ -10,39 +10,18 @@ export const continuousKlinesToCandleSticks = ({
   return data.map((item: number[]) => {
     return {
       openT: item[0],
-      /*
-      openTime: new Date(item[0]).toLocaleString('pl-PL', {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        fractionalSecondDigits: 3,
-      }),
-*/
       openTime: new Date(item[0]).toLocaleString(),
-      open: item[1],
-      high: item[2],
-      low: item[3],
-      close: item[4],
+      open: Number(item[1]),
+      high: Number(item[2]),
+      low: Number(item[3]),
+      close: Number(item[4]),
+      volume: Number(item[5]),
       closeT: item[6],
-      /*
-      closeTime: new Date(item[6]).toLocaleString('pl-PL', {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        fractionalSecondDigits: 3,
-      }),
-*/
       closeTime: new Date(item[6]).toLocaleString(),
+      quoteVolume: Number(item[7]),
+      trades: item[8],
+      takerBaseAssetVolume: Number(item[9]),
+      takerQuoteAssetVolume: Number(item[10]),
     };
   });
 };
